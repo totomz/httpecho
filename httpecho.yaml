@@ -1,0 +1,48 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: httpecho-app
+  namespace: ziotest # TODO change accordingly to your env
+  labels:
+    app: httpecho
+spec:
+  containers:
+    - name: httpecho-app
+      image: totomz84/httpecho        
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: ziotest # TODO change accordingly to your env
+  name: httpecho-service
+spec:
+  selector:
+    app: httpecho
+  ports:
+    - port: 8080
+---
+
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: httpecho-ingress
+  namespace: ziotest # TODO change accordingly to your env
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2         # TODO change your annotations here
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Deluge-Base "/deluge/";      
+      add_header X-Frame-Options SAMEORIGIN;
+      more_set_headers "Request-Id: $req_id";
+spec:
+  rules:
+    - host: whatever-host.nx
+      http:
+        paths:          
+          - path: /httpbin(/|$)(.*)
+            pathType: Prefix
+            backend:              
+              service:
+                name: httpecho-service
+                port:
+                  number: 8080
