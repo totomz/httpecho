@@ -12,7 +12,8 @@ build: get
 	GOOS=darwin go build -ldflags "-X 'main.GitCommit=$(COMMIT)' -X 'main.BuildTime=$(TIMESTAMP)'" -o bin/httpecho_osx .
 
 build-docker: build
-	docker build -t totomz84/httpecho:latest .
+	docker build -t totomz84/httpecho:$(COMMIT) .
+	docker tag totomz84/httpecho:$(COMMIT) totomz84/httpecho:latest 
 
 docker-push: build-docker
-	docker push totomz84/httpecho:latest
+	docker push --all-tags totomz84/httpecho
